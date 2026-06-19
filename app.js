@@ -1,6 +1,7 @@
 const stateKey = "ecoworld-mobile-state-v4";
 const legacyStateKey = "ecoworld-mobile-state-v3";
-const adminTasksKey = "ecoworld-admin-tasks-v1";
+const adminTasksKey = "ecoworld-admin-tasks-v3";
+const legacyAdminTasksKeys = ["ecoworld-admin-tasks-v2", "ecoworld-admin-tasks-v1"];
 const contentKey = "ecoworld-admin-content-v1";
 
 const taskTypologies = [
@@ -132,6 +133,9 @@ const defaultTasks = [
   }
 ];
 
+const sharedCatalog = window.EcoWorldCatalog || { tasks: [], learning: [], learningEnrichment: {} };
+defaultTasks.push(...sharedCatalog.tasks);
+
 const defaultLearning = [
   {
     id: "learn-sort",
@@ -179,6 +183,9 @@ const defaultLearning = [
   }
 ];
 
+defaultLearning.forEach((item) => Object.assign(item, sharedCatalog.learningEnrichment[item.id] || {}));
+defaultLearning.push(...sharedCatalog.learning);
+
 const leadersBase = [
   { name: "Алина", title: "Эко-лидер", points: 520 },
   { name: "Марк", title: "Хранитель природы", points: 430 },
@@ -198,9 +205,6 @@ let yandexPlacemarkByTask = {};
 
 const authScreen = document.getElementById("authScreen");
 const authForm = document.getElementById("authForm");
-const sendCodeButton = document.getElementById("sendCodeButton");
-const demoCodeHint = document.getElementById("demoCodeHint");
-const interestSelect = document.getElementById("interestSelect");
 const screens = document.querySelectorAll(".screen");
 const bottomLinks = document.querySelectorAll(".bottom-link");
 const headerBalance = document.getElementById("headerBalance");
@@ -220,6 +224,17 @@ function loadTasks() {
   try {
     const saved = JSON.parse(localStorage.getItem(adminTasksKey));
     if (Array.isArray(saved)) return saved.map(normalizeTask);
+
+    for (const legacyKey of legacyAdminTasksKeys) {
+      const legacySaved = JSON.parse(localStorage.getItem(legacyKey));
+      if (Array.isArray(legacySaved)) {
+        const merged = new Map(defaultTasks.map((task) => [task.id, task]));
+        legacySaved.forEach((task) => merged.set(task.id, task));
+        const migrated = [...merged.values()].map(normalizeTask);
+        localStorage.setItem(adminTasksKey, JSON.stringify(migrated));
+        return migrated;
+      }
+    }
   } catch {
     return defaultTasks;
   }
@@ -283,32 +298,126 @@ function loadLearningItems() {
 }
 
 function getLearningIcon(item) {
+  if (item.thumbnail) return item.thumbnail;
   if (learningIcons[item.id]) return learningIcons[item.id];
   const searchText = `${item.theme || ""} ${item.title || ""}`.toLowerCase();
-  if (searchText.includes("батар")) return learningIcons["learn-battery"];
-  if (searchText.includes("сорт") || searchText.includes("переработ")) return learningIcons["learn-sort"];
-  if (searchText.includes("покуп") || searchText.includes("упаков")) return learningIcons["learn-packaging"];
+  if (searchText.includes("батар") || searchText.includes("энерг")) return learningIcons["learn-battery"];
+  if (searchText.includes("сорт") || searchText.includes("переработ") || searchText.includes("электрон") || searchText.includes("одеж")) return learningIcons["learn-sort"];
+  if (searchText.includes("покуп") || searchText.includes("упаков") || searchText.includes("пищ") || searchText.includes("многораз") || searchText.includes("осознан") || searchText.includes("привыч")) return learningIcons["learn-packaging"];
   return learningIcons["learn-city"];
+}
+
+function renderLearningContent(item) {
+  const explanation = item.explanation || item.text || "Материал готовится.";
+  const checklist = Array.isArray(item.checklist) ? item.checklist : [];
+  const sections = Array.isArray(item.sections) ? item.sections : [];
+  const gallery = Array.isArray(item.gallery) ? item.gallery : [];
+  const videos = Array.isArray(item.videos) ? item.videos : [];
+  return `
+    <section class="learning-section">
+      <span class="learning-section-icon">i</span>
+      <div>
+        <h2>Объяснение</h2>
+        <p>${explanation}</p>
+      </div>
+    </section>
+    ${sections.map((section) => `
+      <section class="article-subsection">
+        <h2>${section.title}</h2>
+        ${(section.paragraphs || []).map((paragraph) => `<p>${paragraph}</p>`).join("")}
+        ${section.items?.length ? `<ul>${section.items.map((entry) => `<li>${entry}</li>`).join("")}</ul>` : ""}
+        ${section.tip ? `<div class="article-tip"><strong>Совет:</strong> ${section.tip}</div>` : ""}
+      </section>
+    `).join("")}
+    ${gallery.length ? `
+      <section class="learning-media-block">
+        <div class="media-heading">
+          <span class="kicker">Галерея</span>
+          <h2>Листай карточки</h2>
+        </div>
+        <div class="glossary-gallery">
+          ${gallery.map((card) => `
+            <article class="glossary-card">
+              <img src="${card.image}" alt="Иллюстрация термина ${card.term}" loading="lazy" />
+              <div class="glossary-copy">
+                <h3>${card.term}</h3>
+                ${card.subtitle ? `<span>${card.subtitle}</span>` : ""}
+                <p>${card.definition}</p>
+                <small>${card.example}</small>
+              </div>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
+    ${item.infographic ? `
+      <section class="learning-media-block">
+        <div class="media-heading">
+          <span class="kicker">Инфографика</span>
+          <h2>Этапы переработки</h2>
+        </div>
+        <img class="learning-infographic" src="${item.infographic.image}" alt="${item.infographic.alt}" loading="lazy" />
+        <ol class="infographic-stages">
+          ${item.infographic.stages.map((stage) => `<li><span>${stage}</span></li>`).join("")}
+        </ol>
+      </section>
+    ` : ""}
+    ${videos.length ? `
+      <section class="learning-media-block">
+        <div class="media-heading">
+          <span class="kicker">Видео</span>
+          <h2>Материалы для просмотра</h2>
+        </div>
+        <div class="video-learning-list">
+          ${videos.map((video) => `
+            <article class="video-learning-item">
+              <h3>${video.title}</h3>
+              ${video.embedUrl ? `<div class="video-frame"><iframe src="${video.embedUrl}" title="${video.title}" loading="lazy" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>` : ""}
+              <a class="external-media-link" href="${video.url}" target="_blank" rel="noopener noreferrer">Открыть источник</a>
+            </article>
+          `).join("")}
+        </div>
+      </section>
+    ` : ""}
+    ${checklist.length ? `
+      <section class="learning-section">
+        <span class="learning-section-icon">✓</span>
+        <div>
+          <h2>Чек-лист</h2>
+          <ul class="learning-checklist">${checklist.map((step) => `<li>${step}</li>`).join("")}</ul>
+        </div>
+      </section>
+    ` : ""}
+    ${item.firstStep ? `
+      <section class="learning-callout first-step">
+        <span>Что сделать в первую очередь</span>
+        <strong>${item.firstStep}</strong>
+      </section>
+    ` : ""}
+    ${item.fact ? `
+      <section class="learning-callout fact-card">
+        <span>Интересный факт</span>
+        <strong>${item.fact}</strong>
+      </section>
+    ` : ""}
+  `;
 }
 
 function loadState() {
   const defaults = {
     name: "Ксюша",
-    email: "",
     points: 145,
     completed: [],
     studied: [],
     registered: false,
-    consent: false,
-    interests: [],
-    generatedCode: ""
+    interests: []
   };
   try {
     return { ...defaults, ...JSON.parse(localStorage.getItem(stateKey)) };
   } catch {
     try {
       const legacy = JSON.parse(localStorage.getItem(legacyStateKey));
-      return { ...defaults, ...legacy, registered: false, consent: false };
+      return { ...defaults, ...legacy, registered: false };
     } catch {
       return defaults;
     }
@@ -347,21 +456,6 @@ function taskMatchesFilter(task) {
 
 function renderRegistration() {
   authScreen.classList.toggle("active", !appState.registered);
-  renderInterestSelect();
-}
-
-function renderInterestSelect() {
-  interestSelect.innerHTML = `
-    <span class="interest-title">Интересные направления</span>
-    <div class="interest-grid">
-      ${interestDirections.map((direction) => `
-        <label class="interest-chip">
-          <input type="checkbox" name="interests" value="${direction}" ${appState.interests.includes(direction) ? "checked" : ""} />
-          <span>${direction}</span>
-        </label>
-      `).join("")}
-    </div>
-  `;
 }
 
 function showScreen(name, options = {}) {
@@ -471,6 +565,12 @@ function openTaskDetail(taskId) {
       </div>
       <h2>Что нужно сделать</h2>
       <p>${task.description}</p>
+      <h2>Польза для экологии</h2>
+      <div class="task-impact-grid">
+        <div><strong>${task.impact.co2.toFixed(2)}</strong><span>кг CO2</span></div>
+        <div><strong>${task.impact.waste.toFixed(2)}</strong><span>кг отходов</span></div>
+        <div><strong>${task.impact.water.toFixed(1)}</strong><span>л воды</span></div>
+      </div>
       <div class="points-box">
         <span>Сколько баллов принесет</span>
         <strong>+${task.points}</strong>
@@ -495,16 +595,19 @@ function openLearningDetail(itemId) {
     <div class="detail-card">
       <span class="kicker">${item.type}</span>
       <h1>${item.title}</h1>
-      <div class="task-image" role="img" aria-label="${item.title}">
-        <img src="${item.image}" alt="${item.title}" />
-      </div>
+      ${item.gallery || item.infographic ? "" : `
+        <div class="task-image" role="img" aria-label="${item.title}">
+          <img src="${item.image}" alt="${item.title}" />
+        </div>
+      `}
       <div class="detail-meta">
         <span class="tag">${item.format}</span>
         <span class="tag">${item.time}</span>
         <span class="tag">${item.theme}</span>
       </div>
-      <h2>Материал</h2>
-      <p>${item.text}</p>
+      <div class="learning-content">
+        ${renderLearningContent(item)}
+      </div>
       <div class="action-stack">
         ${studied ? '<div class="points-box"><span>Материал уже отмечен как изученный</span><strong>✓</strong></div>' : '<button class="primary-action" data-study-material>Отметить как изученное</button>'}
       </div>
@@ -540,7 +643,7 @@ function openConfirmPage(taskId) {
         <span class="kicker">Подтверждение</span>
         <h1>${task.title}</h1>
         <p class="confirm-hint">Введите необходимую информацию</p>
-        <label class="upload-label">Прикрепить фотографию<input type="file" accept="image/*" data-proof-file /></label>
+        <label class="upload-label">Прикрепить фото или видео<input type="file" accept="image/*,video/*" data-proof-file /></label>
         <textarea class="proof-textarea" placeholder="Например: отсортировала пластик и бумагу дома" data-proof-text></textarea>
         <button class="text-submit" data-complete-task>Отправить подтверждение</button>
       </div>
@@ -700,8 +803,7 @@ function renderProfile() {
       <div class="stat-box"><strong>${impact.water.toFixed(0)}</strong><span>л воды сохранено</span></div>
     </div>
     <div class="profile-meta">
-      <span>${appState.email || "email не указан"}</span>
-      <span>${appState.interests.length ? appState.interests.join(" · ") : "направления не выбраны"}</span>
+      <span>${appState.interests.length ? appState.interests.join(" · ") : "Участник EcoWorld"}</span>
     </div>
   `;
   impactGrid.innerHTML = results.map((item) => `
@@ -728,36 +830,11 @@ function renderProfile() {
     : `<p>Пока нет подтвержденных заданий.</p>`;
 }
 
-sendCodeButton.addEventListener("click", () => {
-  const email = authForm.elements.email.value.trim();
-  if (!email) {
-    demoCodeHint.textContent = "Сначала введи email.";
-    return;
-  }
-  appState.generatedCode = String(Math.floor(100000 + Math.random() * 900000));
-  demoCodeHint.textContent = `Для демо код из письма: ${appState.generatedCode}`;
-  saveState();
-});
-
 authForm.addEventListener("submit", (event) => {
   event.preventDefault();
-  const selectedInterests = [...authForm.querySelectorAll('input[name="interests"]:checked')].map((input) => input.value);
-  if (!appState.generatedCode || authForm.elements.code.value.trim() !== appState.generatedCode) {
-    demoCodeHint.textContent = "Введите корректный код из письма.";
-    return;
-  }
-  if (!authForm.elements.consent.checked) {
-    demoCodeHint.textContent = "Нужно согласие на обработку персональных данных.";
-    return;
-  }
-  if (!selectedInterests.length) {
-    demoCodeHint.textContent = "Выбери хотя бы одно интересное направление.";
-    return;
-  }
-  appState.name = authForm.elements.name.value.trim();
-  appState.email = authForm.elements.email.value.trim();
-  appState.interests = selectedInterests;
-  appState.consent = true;
+  const name = authForm.elements.name.value.trim();
+  if (!name) return;
+  appState.name = name;
   appState.registered = true;
   saveState();
   renderAll();
