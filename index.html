@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>EcoWorld</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" defer></script>
+  </head>
+  <body>
+    <div class="phone-shell">
+      <section class="auth-screen active" id="authScreen">
+        <div class="auth-card glass-card">
+          <img src="./assets/ecoworld-logo.png" alt="EcoWorld" />
+          <span class="kicker">Вход в EcoWorld</span>
+          <h1>Создай профиль</h1>
+          <p>Зарегистрируйся по почте, подтверди код и выбери направления заданий, которые тебе интересны.</p>
+
+          <form class="auth-form" id="authForm">
+            <label>
+              Имя
+              <input name="name" type="text" placeholder="Ксюша" required />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" placeholder="name@email.com" required />
+            </label>
+            <button class="primary-action" type="button" id="sendCodeButton">Получить код</button>
+            <label>
+              Код из письма
+              <input name="code" inputmode="numeric" maxlength="6" placeholder="000000" required />
+            </label>
+            <p class="demo-code" id="demoCodeHint"></p>
+            <label class="consent-row">
+              <input name="consent" type="checkbox" required />
+              <span>Я согласна на обработку персональных данных</span>
+            </label>
+            <div class="interest-select" id="interestSelect" aria-label="Интересные направления заданий"></div>
+            <button class="primary-action" type="submit">Завершить регистрацию</button>
+          </form>
+        </div>
+      </section>
+
+      <header class="app-header">
+        <button class="logo-button" data-home="tasks" aria-label="EcoWorld">
+          <img src="./assets/ecoworld-logo.png" alt="EcoWorld" />
+        </button>
+        <div class="header-copy">
+          <strong>EcoWorld</strong>
+          <span>Экология, которая приносит пользу</span>
+        </div>
+        <div class="balance-pill" id="headerBalance">0</div>
+      </header>
+
+      <main class="screen-stack">
+        <section class="screen active" id="screen-tasks">
+          <div class="screen-title">
+            <span class="kicker">Все действия</span>
+            <h1>Задания EcoWorld</h1>
+            <p>Делай как обычно. Получай больше.</p>
+          </div>
+
+          <div class="segment-control" aria-label="Фильтр заданий">
+            <button class="segment active" data-task-filter="all">Все</button>
+            <button class="segment" data-task-filter="points">Точки рядом</button>
+            <button class="segment" data-task-filter="independent">Можно везде</button>
+          </div>
+
+          <div class="task-feed" id="taskFeed"></div>
+        </section>
+
+        <section class="screen" id="screen-map">
+          <div class="screen-title">
+            <span class="kicker">Карта партнеров</span>
+            <h1>Задания рядом</h1>
+            <p>На карте показаны задания компаний-партнеров, привязанные к конкретной точке.</p>
+          </div>
+
+          <div class="glass-card map-card">
+            <div id="yandexMap" class="yandex-map" aria-label="Яндекс карта с партнерскими заданиями"></div>
+            <div class="map-fallback" id="mapFallback" hidden>
+              <strong>Яндекс Карты</strong>
+              <span>Если карта не загрузилась, откройте точку партнера через кнопку в задании.</span>
+            </div>
+          </div>
+
+          <div class="partner-map-list" id="partnerMapList"></div>
+        </section>
+
+        <section class="screen" id="screen-learning">
+          <div class="screen-title">
+            <span class="kicker">Обучение</span>
+            <h1>Полезные материалы</h1>
+            <p>Короткие карточки, статьи и практические подсказки по экологичным действиям.</p>
+          </div>
+          <div class="learning-feed" id="learningFeed"></div>
+        </section>
+
+        <section class="screen" id="screen-task-detail">
+          <button class="back-button" data-back="tasks">Назад</button>
+          <article id="taskDetailPage"></article>
+        </section>
+
+        <section class="screen" id="screen-confirm">
+          <button class="back-button" data-back="detail">Назад</button>
+          <article id="confirmPage"></article>
+        </section>
+
+        <section class="screen" id="screen-learning-detail">
+          <button class="back-button" data-back="learning">Назад</button>
+          <article id="learningDetailPage"></article>
+        </section>
+
+        <section class="screen" id="screen-rating">
+          <div class="screen-title">
+            <span class="kicker">Экология</span>
+            <h1>Рейтинг</h1>
+            <p>Выполняй задания, поднимайся выше и забирай приз месяца.</p>
+          </div>
+          <div id="leaderboard" class="leaderboard"></div>
+        </section>
+
+        <section class="screen" id="screen-profile">
+          <div class="profile-hero glass-card" id="profileHero"></div>
+          <div class="section-heading">
+            <span class="kicker">Экологический вклад</span>
+            <h2>Результат по типам заданий</h2>
+          </div>
+          <div class="impact-grid" id="impactGrid"></div>
+          <div class="glass-card history-card">
+            <div class="card-head">
+              <span class="kicker">История</span>
+              <h2>Выполнено</h2>
+            </div>
+            <div id="historyList"></div>
+          </div>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="Навигация приложения">
+        <button class="bottom-link active" data-view="tasks"><span>✓</span>Задания</button>
+        <button class="bottom-link" data-view="map"><span>⌖</span>Карта</button>
+        <button class="bottom-link" data-view="learning"><span>◇</span>Обучение</button>
+        <button class="bottom-link" data-view="rating"><span>▦</span>Рейтинг</button>
+        <button class="bottom-link" data-view="profile"><span>◉</span>Профиль</button>
+      </nav>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

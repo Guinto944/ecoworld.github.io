@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>EcoWorld Admin</title>
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./admin.css" />
+  </head>
+  <body class="admin-body">
+    <div class="admin-shell">
+      <aside class="admin-sidebar glass-card">
+        <a class="admin-brand" href="./index.html" aria-label="EcoWorld app">
+          <img src="./assets/ecoworld-logo.png" alt="EcoWorld" />
+          <span>
+            <strong>EcoWorld</strong>
+            <small>Admin panel</small>
+          </span>
+        </a>
+        <nav class="admin-nav" aria-label="Разделы админки">
+          <a href="#overview">Обзор</a>
+          <a href="#tasks">Задания</a>
+          <a href="#editor">Редактор</a>
+          <a href="#content">Контент</a>
+        </nav>
+        <a class="admin-app-link" href="./index.html">Открыть приложение</a>
+      </aside>
+
+      <main class="admin-main">
+        <section class="admin-hero" id="overview">
+          <span class="kicker">Управление платформой</span>
+          <h1>Админская страница EcoWorld</h1>
+          <p>Здесь можно редактировать задания, смотреть статистику по ключевым параметрам и создавать новый контент для проекта.</p>
+        </section>
+
+        <section class="admin-grid stats-grid" id="statsGrid" aria-label="Статистика платформы"></section>
+
+        <section class="admin-layout">
+          <article class="admin-panel glass-card">
+            <div class="panel-head">
+              <div>
+                <span class="kicker">Активность</span>
+                <h2>Статистика по заданиям</h2>
+              </div>
+              <button class="admin-secondary" id="resetDemoStats" type="button">Сбросить демо-статистику</button>
+            </div>
+            <div class="analytics-grid">
+              <div>
+                <h3>Типологии</h3>
+                <div class="bar-list" id="taxonomyStats"></div>
+              </div>
+              <div>
+                <h3>Выполнения</h3>
+                <div class="bar-list" id="completionStats"></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="admin-panel glass-card">
+            <div class="panel-head">
+              <div>
+                <span class="kicker">Параметры</span>
+                <h2>Экологический эффект</h2>
+              </div>
+            </div>
+            <div class="impact-summary" id="impactSummary"></div>
+          </article>
+        </section>
+
+        <section class="admin-panel glass-card" id="tasks">
+          <div class="panel-head">
+            <div>
+              <span class="kicker">Задания</span>
+              <h2>Управление заданиями</h2>
+            </div>
+            <button class="admin-primary" id="newTaskButton" type="button">Создать задание</button>
+          </div>
+          <div class="admin-table-wrap">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Задание</th>
+                  <th>Тип</th>
+                  <th>Типология / направление</th>
+                  <th>Баллы</th>
+                  <th>Партнер / точка</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="taskTable"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="admin-panel glass-card" id="editor">
+          <div class="panel-head">
+            <div>
+              <span class="kicker">Редактор</span>
+              <h2 id="editorTitle">Новое задание</h2>
+            </div>
+            <button class="admin-secondary" id="restoreDefaultsButton" type="button">Вернуть базовые задания</button>
+          </div>
+
+          <form class="admin-form" id="taskForm">
+            <input type="hidden" name="id" />
+            <label>
+              Название
+              <input name="title" required />
+            </label>
+            <label>
+              Административный тип
+              <select name="type">
+                <option value="partner">Партнерское задание</option>
+                <option value="simple">Простое задание</option>
+              </select>
+            </label>
+            <label>
+              Типология для пользователя
+              <input name="taxonomy" list="taxonomyOptions" required />
+              <datalist id="taxonomyOptions">
+                <option value="Сокращение отходов"></option>
+                <option value="Переработка и повторное использование"></option>
+                <option value="Сбережение ресурсов"></option>
+                <option value="Забота о природе и городской среде"></option>
+              </datalist>
+            </label>
+            <label>
+              Направление
+              <input name="direction" list="directionOptions" required />
+              <datalist id="directionOptions">
+                <option value="Дом и быт"></option>
+                <option value="Покупки и еда"></option>
+                <option value="Переработка"></option>
+                <option value="Одежда и вещи"></option>
+                <option value="Городская среда"></option>
+                <option value="Животные"></option>
+              </datalist>
+            </label>
+            <label>
+              Категория
+              <input name="category" required />
+            </label>
+            <label>
+              Баллы
+              <input name="points" type="number" min="0" step="1" required />
+            </label>
+            <label>
+              Награда
+              <input name="reward" required />
+            </label>
+            <label>
+              Партнер
+              <input name="partner" />
+            </label>
+            <label>
+              Адрес
+              <input name="address" />
+            </label>
+            <label>
+              Широта
+              <input name="lat" type="number" step="0.0001" />
+            </label>
+            <label>
+              Долгота
+              <input name="lng" type="number" step="0.0001" />
+            </label>
+            <label class="full-field">
+              Изображение
+              <select name="image">
+                <option value="./assets/tasks/coffee-cup.png">Кофе со своей кружкой</option>
+                <option value="./assets/tasks/battery-recycling.png">Батарейки</option>
+                <option value="./assets/tasks/eco-delivery.png">Заказ без упаковки</option>
+                <option value="./assets/tasks/home-sort.png">Сортировка дома</option>
+                <option value="./assets/tasks/clothes-recycling.png">Одежда на переработку</option>
+                <option value="./assets/tasks/bottle-day.png">День без бутылок</option>
+              </select>
+            </label>
+            <label>
+              CO2, кг
+              <input name="co2" type="number" min="0" step="0.01" />
+            </label>
+            <label>
+              Отходы, кг
+              <input name="waste" type="number" min="0" step="0.01" />
+            </label>
+            <label>
+              Вода, л
+              <input name="water" type="number" min="0" step="0.1" />
+            </label>
+            <label class="full-field">
+              Описание задания
+              <textarea name="description" rows="4" required></textarea>
+            </label>
+            <div class="form-actions full-field">
+              <button class="admin-primary" type="submit">Сохранить задание</button>
+              <button class="admin-secondary" id="clearFormButton" type="button">Очистить форму</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="admin-panel glass-card" id="content">
+          <div class="panel-head">
+            <div>
+              <span class="kicker">Контент</span>
+              <h2>Создание материалов</h2>
+            </div>
+          </div>
+          <form class="content-form" id="contentForm">
+            <label>
+              Тип материала
+              <select name="type">
+                <option>Статья</option>
+                <option>Новость проекта</option>
+                <option>Обучающий материал</option>
+                <option>Партнерская акция</option>
+              </select>
+            </label>
+            <label>
+              Статус
+              <select name="status">
+                <option>Черновик</option>
+                <option>Готово к публикации</option>
+                <option>Опубликовано</option>
+              </select>
+            </label>
+            <label class="full-field">
+              Заголовок
+              <input name="title" required />
+            </label>
+            <label class="full-field">
+              Текст
+              <textarea name="text" rows="4" required></textarea>
+            </label>
+            <div class="form-actions full-field">
+              <button class="admin-primary" type="submit">Создать материал</button>
+            </div>
+          </form>
+          <div class="content-list" id="contentList"></div>
+        </section>
+      </main>
+    </div>
+
+    <script src="./admin.js"></script>
+  </body>
+</html>
