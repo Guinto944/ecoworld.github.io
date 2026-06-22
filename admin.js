@@ -1,4 +1,5 @@
-const adminTasksKey = "ecoworld-admin-tasks-v1";
+const adminTasksKey = "ecoworld-admin-tasks-v3";
+const legacyAdminTasksKeys = ["ecoworld-admin-tasks-v2", "ecoworld-admin-tasks-v1"];
 const appStateKey = "ecoworld-mobile-state-v4";
 const contentKey = "ecoworld-admin-content-v1";
 
@@ -117,6 +118,8 @@ const defaultTasks = [
   }
 ];
 
+defaultTasks.push(...(window.EcoWorldCatalog?.tasks || []));
+
 const demoUsers = [
   { name: "Алина", points: 520, completed: 11 },
   { name: "Марк", points: 430, completed: 9 },
@@ -141,6 +144,17 @@ function loadTasks() {
   try {
     const saved = JSON.parse(localStorage.getItem(adminTasksKey));
     if (Array.isArray(saved)) return saved.map(normalizeTask);
+
+    for (const legacyKey of legacyAdminTasksKeys) {
+      const legacySaved = JSON.parse(localStorage.getItem(legacyKey));
+      if (Array.isArray(legacySaved)) {
+        const merged = new Map(defaultTasks.map((task) => [task.id, task]));
+        legacySaved.forEach((task) => merged.set(task.id, task));
+        const migrated = [...merged.values()].map(normalizeTask);
+        localStorage.setItem(adminTasksKey, JSON.stringify(migrated));
+        return migrated;
+      }
+    }
   } catch {
     return [...defaultTasks];
   }

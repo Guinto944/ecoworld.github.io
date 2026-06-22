@@ -46,7 +46,7 @@ const defaultTasks = [
     coords: [55.7617, 37.6364],
     image: "./assets/tasks/coffee-cup.png",
     category: "Покупки",
-    points: 35,
+    points: 25,
     reward: "Скидка 10% на напиток",
     description: "Купи напиток у партнера без одноразового стаканчика. Возьми свою кружку или попроси налить напиток в многоразовую тару.",
     impact: { co2: 0.12, waste: 0.03, water: 1.5 }
@@ -62,7 +62,7 @@ const defaultTasks = [
     coords: [55.7781, 37.6337],
     image: "./assets/tasks/battery-recycling.png",
     category: "Переработка",
-    points: 80,
+    points: 40,
     reward: "Скидка 7% на товары для дома",
     description: "Принеси использованные батарейки в пункт партнера. Передай их сотруднику и предъяви QR-код на кассе.",
     impact: { co2: 0.9, waste: 0.5, water: 8 }
@@ -78,7 +78,7 @@ const defaultTasks = [
     coords: [55.7622, 37.5909],
     image: "./assets/tasks/eco-delivery.png",
     category: "Покупки",
-    points: 50,
+    points: 20,
     reward: "150 бонусов магазина",
     description: "Выбери у партнера опцию без пластикового пакета и лишней упаковки. Покажи QR-код при получении заказа.",
     impact: { co2: 0.35, waste: 0.18, water: 3 }
@@ -94,7 +94,7 @@ const defaultTasks = [
     coords: null,
     image: "./assets/tasks/home-sort.png",
     category: "Дом",
-    points: 45,
+    points: 25,
     reward: "45 баллов рейтинга",
     description: "Раздели дома отходы минимум на две категории: перерабатываемое и смешанное. Сфотографируй результат или опиши, что отсортировано.",
     impact: { co2: 0.22, waste: 0.7, water: 2 }
@@ -110,7 +110,7 @@ const defaultTasks = [
     coords: null,
     image: "./assets/tasks/clothes-recycling.png",
     category: "Переработка",
-    points: 90,
+    points: 35,
     reward: "90 баллов рейтинга",
     description: "Отнеси ненужную одежду в контейнер для переработки или благотворительный пункт. Прикрепи фото пакета или пункта приема.",
     impact: { co2: 2.4, waste: 1.2, water: 14 }
@@ -126,7 +126,7 @@ const defaultTasks = [
     coords: null,
     image: "./assets/tasks/bottle-day.png",
     category: "Личный вклад",
-    points: 30,
+    points: 15,
     reward: "30 баллов рейтинга",
     description: "Используй многоразовую бутылку в течение дня. Для подтверждения прикрепи фото бутылки или напиши короткий отчет.",
     impact: { co2: 0.28, waste: 0.05, water: 2 }
@@ -186,12 +186,105 @@ const defaultLearning = [
 defaultLearning.forEach((item) => Object.assign(item, sharedCatalog.learningEnrichment[item.id] || {}));
 defaultLearning.push(...sharedCatalog.learning);
 
-const leadersBase = [
-  { name: "Алина", title: "Эко-лидер", points: 520 },
-  { name: "Марк", title: "Хранитель природы", points: 430 },
-  { name: "София", title: "Защитник ресурсов", points: 360 },
-  { name: "Даниил", title: "Исследователь экосреды", points: 260 }
+const averageTaskPoints = Math.round(defaultTasks.reduce((sum, task) => sum + task.points, 0) / defaultTasks.length);
+
+const legacyLeaderboardScores = [
+  ["Honey.Trash", 103],
+  ["Platon Glinka", 103],
+  ["Алиса Николайчук", 103],
+  ["minty.cloud", 86],
+  ["neonTatarin", 83],
+  ["cheburek-boy", 72],
+  ["mashaBezBrovi", 66],
+  ["cvet_ser", 65],
+  ["bebra_3000", 62],
+  ["pastelBEBRA", 55],
+  ["ZhdanchikLol", 49],
+  ["4ai_Latte", 45],
+  ["deepFroggy", 39],
+  ["Vesnushka666", 37],
+  ["pluhh_cat", 20],
+  ["MarsiCat", 20],
+  ["LunnayaMorda", 19],
+  ["VhsMemory", 19],
+  ["Enrika_skyfall", 18],
+  ["arso4ka_XO", 18],
+  ["PirogSKapustoi", 14],
+  ["milkOcean", 14],
+  ["cloudberryy", 14],
+  ["LastSunsett", 13],
+  ["TurboGrib", 10],
+  ["toxicCherry", 9],
+  ["Dan1loVibe", 9],
+  ["malinkaOFF", 9],
+  ["lost-inMars", 8],
+  ["kristaWarm", 7],
+  ["BEBRA_900", 7],
+  ["PinkiMoon", 5],
+  ["LoLichka22", 5],
+  ["FoxTrap", 5],
+  ["GopStop_13", 4],
+  ["v1kaWave", 2],
+  ["NullPointer", 2],
+  ["grannySmoke", 2],
+  ["Sm1leVoid", 2],
+  ["zub4ik228", 2],
+  ["Ксения Лужецкая", 2],
+  ["foxi999", 1],
+  ["GritonLine", 1],
+  ["sleepyOtter", 1],
+  ["ch1ngaQueen", 1],
+  ["bulmchik_777", 1],
+  ["karmelita05", 1],
+  ["Антон Антонов", 1],
+  ["Kate", 1],
+  ["buz_dmi4ik", 0],
+  ["flkshglk", 0],
+  ["Ksenia_lu", 0],
+  ["ty65ty", 0]
 ];
+
+const additionalLeaderNames = [
+  "EcoMira", "GreenStep", "UrbanLeaf", "ClearRiver", "SolarDay", "FreshRoute",
+  "ReuseLab", "EcoPulse", "LightForest", "ZeroWasteWay", "AquaLine", "CleanCity",
+  "SecondLife", "PaperLoop", "GlassCycle", "TerraNova", "GreenSignal", "EcoVector",
+  "BrightNature", "CleanTrack", "LeafPoint", "ResourceMind", "CityGarden", "EcoChoice",
+  "RefillWay", "NatureCode", "RecycleNow", "GreenOrbit", "EcoFocus", "WaterGuard",
+  "PlasticFree", "EarthCare", "ClimateStep", "EcoBalance", "PureAir", "GreenFuture",
+  "CleanWave", "EcoRoute", "SmartRecycle", "LessWaste", "EcoUnity", "UrbanGarden",
+  "FreshStart", "EcoMotion"
+];
+
+function getLeaderboardTitle(points) {
+  if (points >= 4500) return "Амбассадор экологии";
+  if (points >= 3000) return "Эко-лидер";
+  if (points >= 1500) return "Хранитель природы";
+  if (points >= 600) return "Защитник ресурсов";
+  if (points > 0) return "Участник экодвижения";
+  return "Новый участник";
+}
+
+function roundLeaderboardPoints(points) {
+  return Math.round(points / 5) * 5;
+}
+
+const legacyLeaders = legacyLeaderboardScores.map(([name, completedTasks]) => {
+  const points = roundLeaderboardPoints(completedTasks * averageTaskPoints);
+  return { name, title: getLeaderboardTitle(points), points };
+});
+
+const additionalLeaders = additionalLeaderNames.flatMap((name, rootIndex) => [0, 1].map((variantIndex) => {
+  const generatedIndex = rootIndex * 2 + variantIndex;
+  const completedTasks = Math.max(2, 70 - Math.floor((generatedIndex * 68) / 87));
+  const points = roundLeaderboardPoints(completedTasks * averageTaskPoints);
+  return {
+    name: variantIndex === 0 ? name : `${name}_msk`,
+    title: getLeaderboardTitle(points),
+    points
+  };
+}));
+
+const leadersBase = [...legacyLeaders, ...additionalLeaders];
 
 let tasks = loadTasks();
 let learningItems = loadLearningItems();
@@ -202,6 +295,8 @@ let selectedLearningId = learningItems[0]?.id || "";
 let previousMainScreen = "tasks";
 let yandexMap = null;
 let yandexPlacemarkByTask = {};
+let pendingProof = null;
+let proofIsProcessing = false;
 
 const authScreen = document.getElementById("authScreen");
 const authForm = document.getElementById("authForm");
@@ -552,6 +647,7 @@ function openTaskDetail(taskId) {
   selectedTaskId = taskId;
   const task = getTask(taskId);
   const done = completedIds().has(task.id);
+  const completion = appState.completed.find((item) => item.id === task.id);
   taskDetailPage.innerHTML = `
     <div class="detail-card">
       <span class="kicker">${task.partner || "EcoWorld"}</span>
@@ -576,6 +672,12 @@ function openTaskDetail(taskId) {
         <strong>+${task.points}</strong>
       </div>
       <p><strong>Награда:</strong> ${task.reward}</p>
+      ${completion?.proofImage ? `
+        <div class="saved-proof">
+          <span>Фото сохранено в подтверждении</span>
+          <img src="${completion.proofImage}" alt="Прикреплённое подтверждение задания" />
+        </div>
+      ` : ""}
       <div class="action-stack">
         ${done ? '<div class="points-box"><span>Задание уже подтверждено</span><strong>✓</strong></div>' : '<button class="primary-action" data-confirm-task>Подтвердить задание</button>'}
         ${task.type === "partner" ? '<button class="secondary-action" data-show-on-map>Показать на карте</button>' : ""}
@@ -626,6 +728,8 @@ function markLearningStudied(itemId) {
 function openConfirmPage(taskId) {
   selectedTaskId = taskId;
   const task = getTask(taskId);
+  pendingProof = null;
+  proofIsProcessing = false;
   if (task.type === "partner") {
     confirmPage.innerHTML = `
       <div class="confirm-card">
@@ -633,29 +737,138 @@ function openConfirmPage(taskId) {
         <h1>${task.title}</h1>
         <p class="confirm-hint">Предъяви QR-код на кассе для получения скидки</p>
         <div class="qr-wrap"><canvas id="qrCanvas" width="230" height="230"></canvas></div>
-        <button class="primary-action" data-complete-task>Сканирование выполнено</button>
+        <p class="qr-scan-message" data-qr-scan-message role="status" hidden></p>
+        <button class="primary-action" data-qr-scan>Сканирование выполнено</button>
       </div>
     `;
     drawQr(`EcoWorld:${task.id}:${Date.now()}`);
+    confirmPage.querySelector("[data-qr-scan]").addEventListener("click", () => rejectQrScan());
   } else {
     confirmPage.innerHTML = `
       <div class="confirm-card">
         <span class="kicker">Подтверждение</span>
         <h1>${task.title}</h1>
         <p class="confirm-hint">Введите необходимую информацию</p>
-        <label class="upload-label">Прикрепить фото или видео<input type="file" accept="image/*,video/*" data-proof-file /></label>
+        <label class="upload-label" data-upload-label>
+          <span data-upload-label-text>Прикрепить фото</span>
+          <input type="file" accept="image/*" data-proof-file />
+        </label>
+        <div class="proof-file-status" data-proof-status>Фото не выбрано</div>
+        <div class="proof-preview" data-proof-preview hidden></div>
         <textarea class="proof-textarea" placeholder="Например: отсортировала пластик и бумагу дома" data-proof-text></textarea>
+        <p class="proof-message" data-proof-message role="status"></p>
         <button class="text-submit" data-complete-task>Отправить подтверждение</button>
       </div>
     `;
+    const proofInput = confirmPage.querySelector("[data-proof-file]");
+    proofInput.addEventListener("change", () => handleProofSelection(proofInput));
+    confirmPage.querySelector("[data-complete-task]").addEventListener("click", () => completeSimpleTask(task.id));
   }
-  confirmPage.querySelector("[data-complete-task]").addEventListener("click", () => completeTask(task.id));
   showScreen("confirm");
 }
 
-function completeTask(taskId) {
+function rejectQrScan() {
+  const message = confirmPage.querySelector("[data-qr-scan-message]");
+  const button = confirmPage.querySelector("[data-qr-scan]");
+  message.hidden = false;
+  message.textContent = "К сожалению, сканирование не было подтверждено. Продемонстрируйте код на кассе для повторного сканирования";
+  button.textContent = "Повторить сканирование";
+}
+
+function createProofPreview(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("read"));
+    reader.onload = () => {
+      const image = new Image();
+      image.onerror = () => reject(new Error("image"));
+      image.onload = () => {
+        const maxSide = 720;
+        const scale = Math.min(1, maxSide / Math.max(image.width, image.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(image.width * scale));
+        canvas.height = Math.max(1, Math.round(image.height * scale));
+        canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.68));
+      };
+      image.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleProofSelection(input) {
+  const file = input.files?.[0];
+  const status = confirmPage.querySelector("[data-proof-status]");
+  const preview = confirmPage.querySelector("[data-proof-preview]");
+  const label = confirmPage.querySelector("[data-upload-label]");
+  const labelText = confirmPage.querySelector("[data-upload-label-text]");
+  const message = confirmPage.querySelector("[data-proof-message]");
+  const submitButton = confirmPage.querySelector("[data-complete-task]");
+  pendingProof = null;
+  preview.hidden = true;
+  preview.replaceChildren();
+  label.classList.remove("has-file");
+  message.textContent = "";
+  if (!file) {
+    status.textContent = "Фото не выбрано";
+    labelText.textContent = "Прикрепить фото";
+    return;
+  }
+  if (!file.type.startsWith("image/")) {
+    input.value = "";
+    status.textContent = "Можно прикрепить только изображение";
+    return;
+  }
+  if (file.size > 12 * 1024 * 1024) {
+    input.value = "";
+    status.textContent = "Файл слишком большой. Максимальный размер — 12 МБ";
+    return;
+  }
+  proofIsProcessing = true;
+  submitButton.disabled = true;
+  status.textContent = "Подготавливаем фото...";
+  try {
+    const proofImage = await createProofPreview(file);
+    pendingProof = { name: file.name, type: file.type, image: proofImage };
+    const image = document.createElement("img");
+    image.src = proofImage;
+    image.alt = "Выбранное фото";
+    preview.append(image);
+    preview.hidden = false;
+    label.classList.add("has-file");
+    labelText.textContent = "Заменить фото";
+    status.textContent = `Загружено: ${file.name}`;
+  } catch {
+    input.value = "";
+    status.textContent = "Не удалось обработать фото. Выберите другой файл";
+  } finally {
+    proofIsProcessing = false;
+    submitButton.disabled = false;
+  }
+}
+
+function completeSimpleTask(taskId) {
+  const proofText = confirmPage.querySelector("[data-proof-text]").value.trim();
+  const message = confirmPage.querySelector("[data-proof-message]");
+  if (proofIsProcessing) {
+    message.textContent = "Дождитесь завершения загрузки фото";
+    return;
+  }
+  if (!pendingProof && !proofText) {
+    message.textContent = "Прикрепите фото или введите информацию о выполнении задания";
+    return;
+  }
+  completeTask(taskId, {
+    proofName: pendingProof?.name || "",
+    proofImage: pendingProof?.image || "",
+    proofText: proofText.slice(0, 500)
+  });
+}
+
+function completeTask(taskId, proof = {}) {
   const task = getTask(taskId);
-  if (!task || completedIds().has(task.id)) {
+  if (!task || task.type === "partner" || completedIds().has(task.id)) {
     openTaskDetail(taskId);
     return;
   }
@@ -665,6 +878,7 @@ function completeTask(taskId) {
     title: task.title,
     points: task.points,
     reward: task.reward,
+    ...proof,
     date: new Date().toLocaleDateString("ru-RU")
   });
   renderAll();
@@ -738,18 +952,35 @@ function focusTaskOnMap(taskId) {
 }
 
 function renderLeaderboard() {
-  const leaders = [...leadersBase, { name: appState.name, title: getUserTitle(), points: appState.points, current: true }]
+  const leaders = [...leadersBase, { name: appState.name, title: getUserTitle(), points: roundLeaderboardPoints(appState.points), current: true }]
     .sort((a, b) => b.points - a.points);
-  leaderboard.innerHTML = leaders.map((user, index) => `
-    <div class="leader-row">
-      <span class="rank">${index + 1}</span>
+  const rankedLeaders = leaders.map((user, index) => ({
+    ...user,
+    rank: index > 0 && leaders[index - 1].points === user.points
+      ? leaders.slice(0, index).findIndex((item) => item.points === user.points) + 1
+      : index + 1
+  }));
+  leaderboard.innerHTML = `
+    <div class="rating-summary glass-card">
+      <span>Участников в рейтинге</span>
+      <strong>${leaders.length}</strong>
+    </div>
+    <div class="leaderboard-labels" aria-hidden="true">
+      <span>Место</span>
+      <span>Участник</span>
+      <span>Баллы</span>
+    </div>
+    ${rankedLeaders.map((user) => `
+      <div class="leader-row${user.current ? " current-user" : ""}">
+      <span class="rank">${user.rank}</span>
       <span>
         <strong>${user.name}${user.current ? " (вы)" : ""}</strong><br />
         <small>${user.title}</small>
       </span>
-      <strong>${user.points}</strong>
-    </div>
-  `).join("");
+      <strong>${user.points.toLocaleString("ru-RU")}</strong>
+      </div>
+    `).join("")}
+  `;
 }
 
 function getUserTitle() {
